@@ -1,7 +1,7 @@
 require 'nokogiri'
 require 'rest_client'
 
-FIELDS = ['id', 'url', 'country', 'name', 'full_location', 'website', 'type', 'sectors']
+FIELDS = ['country', 'name', 'full_location', 'website', 'iasp_member', 'iasp_url', 'iasp_id', 'iasp_type', 'iasp_sectors']
 BASE_URL = 'https://www.iasp.ws/our-members/directory/@'
 
 def get_detail(url, id)
@@ -9,14 +9,15 @@ def get_detail(url, id)
     raw_page = res.body
     page = Nokogiri::HTML(raw_page)
     details = {
-        id: id,
-        url: url,
         country: nil,
         name: nil,
         full_location: nil,
         website: nil,
-        type: nil,
-        sectors: []
+        iasp_member: 1,
+        iasp_url: url,
+        iasp_id: id,
+        iasp_type: nil,
+        iasp_sectors: []
     }
     page.css(".mergefield").each do |f|
         vdlabel = f.css(".vdlabel").text
@@ -38,11 +39,11 @@ def get_detail(url, id)
             end
         end
         if vdlabel.include?('Type')
-            details[:type] = vdcon
+            details[:iasp_type] = vdcon
         end
         if vdlabel.include?('Main technology sectors')
             f.css('.vdcontent .vdcontent').each do |s|
-                details[:sectors] << s.text
+                details[:iasp_sectors] << s.text
             end
         end
 
