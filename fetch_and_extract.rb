@@ -1,8 +1,20 @@
 require 'nokogiri'
 require 'rest_client'
+require 'json'
 
-FIELDS = ['country', 'name', 'full_location', 'website', 'iasp_member', 'iasp_url', 'iasp_id', 'iasp_type', 'iasp_sectors']
+FIELDS = ['country', 'name', 'full_location', 'website', 'coordinates', 'iasp_member', 'iasp_url', 'iasp_id', 'iasp_type', 'iasp_sectors']
 BASE_URL = 'https://www.iasp.ws/our-members/directory/@'
+APPEND_LOCATION = true
+
+$records = {}
+if APPEND_LOCATION
+    f = open('snapshot_30072019.json').read
+    data = JSON.parse(f)['records']
+    data.each do |r|
+        id = r['RecID'].to_i
+        $records[id] = r
+    end
+end
 
 def get_detail(url, id)
     res = RestClient.get(url)
@@ -13,6 +25,7 @@ def get_detail(url, id)
         name: nil,
         full_location: nil,
         website: nil,
+        coordinates: nil,
         iasp_member: 1,
         iasp_url: url,
         iasp_id: id,
@@ -45,6 +58,12 @@ def get_detail(url, id)
             f.css('.vdcontent .vdcontent').each do |s|
                 details[:iasp_sectors] << s.text
             end
+        end
+
+        if APPEND_LOCATION
+            r = $records[id]
+            latlng = r['Latitude'] + "," + r['Longitude']
+            details[:coordinates] = latlng
         end
 
     end
