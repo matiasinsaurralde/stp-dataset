@@ -30,8 +30,9 @@ def get_detail(url, id)
         iasp_url: url,
         iasp_id: id,
         iasp_type: nil,
-        iasp_sectors: []
+        iasp_sectors: nil
     }
+    sectors = []
     page.css(".mergefield").each do |f|
         vdlabel = f.css(".vdlabel").text
         vdcon = f.css(".vdcontent").text
@@ -56,7 +57,7 @@ def get_detail(url, id)
         end
         if vdlabel.include?('Main technology sectors')
             f.css('.vdcontent .vdcontent').each do |s|
-                details[:iasp_sectors] << s.text
+                sectors << s.text.gsub("\t", "")
             end
         end
 
@@ -65,8 +66,9 @@ def get_detail(url, id)
             latlng = r['Latitude'] + "," + r['Longitude']
             details[:coordinates] = latlng
         end
-
     end
+
+    details[:iasp_sectors] = sectors.join(",")
 
     return details
 end
